@@ -18,8 +18,8 @@ text.concordance('the')
 # vocabulary size, "set()" removes repetitions
 print(len(set(text)))
 fdist = nltk.FreqDist(text)
-print(fdist.most_common(10)) # frequency of tokens
+print(list(fdist)) # frequency of tokens
 corpus_root = 'corpus/'
 # loading the corpus strict regx would be: '([a-z]|[0-9]|[A-Z]|_)*.txt'
 filelists = PlaintextCorpusReader(corpus_root, '.*.txt')
-print(filelists.fileids())
+# print(filelists.fileids())
