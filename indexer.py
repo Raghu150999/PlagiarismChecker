@@ -28,7 +28,14 @@ class Indexer:
 			for j, para in enumerate(doc.paras):
 				for term in para.freq_dist:
 					nop += 1
-					obj = {"id": (i, j), "tf": para[term]}
+					_id = (i, j)
+					tf = para.freq_dist[term]
+					obj = {"id": _id, "tf": tf}
+					wt = (1 + math.log(tf))
+					if nc.get(_id):
+						nc[_id] += wt * wt
+					else:
+						nc[_id] = wt * wt
 					# Updating document frequency
 					if df.get(term):
 						df[term] += 1
@@ -40,18 +47,64 @@ class Indexer:
 					else:
 						invertedIndex[term] = [obj]
 		# Normalization coefficient calculations
-		for term in invertedIndex:
-			for obj in invertedIndex[term]:
-				t = obj["id"]
-				tf = obj["tf"]
-				tf_idf = tf * math.log(nop/df[term])
-				if nc.get(t):
-					nc[t] += tf_idf * tf_idf
-				else:
-					nc[t] = tf_idf * tf_idf
-		for term in nc:
-			nc[term] = math.sqrt(nc[term])
+		for _id in nc:
+			nc[_id] = math.sqrt(nc[_id])
 		self.df = df
 		self.invertedIndex = invertedIndex
 		self.nop = nop
 		self.nc = nc
+	
+	def get_top_k(self, input_doc, files, K):
+		'''
+		score[(i, j, k)] - denotes cosine score between paragraph (i, j) in corpus and paragraph k from input document
+		docScore[(i, k)] - dentoes cosine score between document i and paragraph k
+		final[i] - denotes score/similarity of document i with input document
+		weight[k] - # of terms in paragraph k (or any other measure to more weightage to matching of bigger paragraphs)
+		ncd[k] - normalisation constant for vector of paragraph k
+		function returns file names of the top k matching documents
+		'''
+		score = {}
+		docScore = {}
+		finalScore = {}
+		# weight = {}
+		# Normalization constants for input paragraph vectors
+		ncd = {}
+		# Repeated traversal of inverted index can be optimized?
+		# Weight of paragraph (# of words) can be used to give weightage to similarity for bigger paragraphs
+		for k, para in enumerate(input_doc.paras):
+			ncd[k] = 0
+			for term in para.freq_dist:
+				# If term not present in the corpus
+				if not self.df.get(term):
+					continue
+				tfd = para.freq_dist[term]
+				tf_idf = (1 + math.log(tfd)) * math.log(self.nop / self.df[term])
+				ncd[k] += tf_idf * tf_idf
+				for obj in self.invertedIndex[term]:
+					i, j = obj['id']
+					tf = obj['tf']
+					wt = (1 + math.log(tf))
+					if score.get((i, j, k)):
+						score[(i, j, k)] += wt * tf_idf
+					else:
+						score[(i, j, k)] = wt * tf_idf
+		
+		for i, j, k in score:
+			score[(i, j, k)] /= self.nc[(i, j)] * ncd[k]
+			if docScore.get((i, k)):
+				docScore[(i, k)] = max([docScore[(i, k)], score[(i, j, k)]])
+			else:
+				docScore[(i, k)] = score[(i, j, k)]
+			if finalScore.get(i):
+				finalScore[i] += docScore[(i, k)]
+			else:
+				finalScore[i] = docScore[(i, k)]
+		ranks = []
+		for i in finalScore:
+			p = (finalScore[i], files[i])
+			ranks.append(p)
+		ranks.sort(reverse=True)
+		l = min(len(ranks), K)
+		ranks = ranks[:l]
+		return ranks
+		

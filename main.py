@@ -4,6 +4,7 @@ from nltk.corpus import PlaintextCorpusReader, stopwords
 from nltk.tokenize import RegexpTokenizer
 from paragraph import Paragraph
 from document import Document
+from indexer import Indexer
 import os
 import sys
 
@@ -18,12 +19,14 @@ def paragraph_tokenizer(text):
 	i = 0
 	while i < len(text):
 		if i < len(text)-1 and text[i] == '\n' and text[i+1] == '\n':
-			output.append(string)
+			if string != "\n":
+				output.append(string)
 			string = ""
 		else:
 			string += text[i]
 		i += 1
-	output.append(string)
+	if string != "\n":
+		output.append(string)
 	return output
 
 def preprocessor(text):
@@ -54,7 +57,8 @@ if __name__ == '__main__':
 	stemmer = PorterStemmer()
 	documents = []
 	vocabulary = set()
-	for i, file in enumerate(os.listdir('corpus')):
+	files = os.listdir('corpus')
+	for i, file in enumerate(files):
 		with open('corpus/' + file, encoding="utf8", errors='ignore') as f:
 			raw = f.read()
 			paras = paragraph_tokenizer(raw)
@@ -73,6 +77,25 @@ if __name__ == '__main__':
 	# Length of vocabulary
 	vocabularyLength = len(vocabulary)
 	print(vocabularyLength)
-	# Take filename as input for processing
-	# inputDocument = str(sys.argv[1])
+	
+	# Creating the inverted index
+	indexer = Indexer(documents)
 
+	# Take filename as input for processing
+	inputDocument = str(sys.argv[1])
+	# inputDocument = 'test.txt'
+	raw = None
+	with open(inputDocument, encoding="utf8", errors="ignore") as input_file:
+		raw = input_file.read()
+	paras = paragraph_tokenizer(raw)
+	paragraphs = []
+	for j, para in enumerate(paras):
+		tokens = preprocessor(para)
+		_id = (-1, j) # -1 so that it is different from other documents in the corpus
+		paragraph = Paragraph(_id, tokens)
+		paragraphs.append(paragraph)
+	input_doc = Document(-1, paragraphs)
+	top_k = indexer.get_top_k(input_doc, files, 10)
+	for i in range(len(top_k)):
+		score, filename = top_k[i]
+		print('Document: ' + str(filename), 'Score: ' + str(score))
