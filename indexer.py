@@ -54,11 +54,12 @@ class Indexer:
 		self.nop = nop
 		self.nc = nc
 	
-	def get_top_k(self, input_doc, files, K):
+	def evaluate_input(self, input_doc, files, K):
 		'''
 		score[(i, j, k)] - denotes cosine score between paragraph (i, j) in corpus and paragraph k from input document
 		docScore[(i, k)] - dentoes cosine score between document i and paragraph k in input document
-		final[i] - denotes score/similarity of document i with input document
+		unique[k] - denotes how unique paragraph k of the input document is
+		finalScore[i] - denotes score/similarity of document i with input document
 		weight[k] - # of terms in paragraph k (or any other measure to more weightage to matching of bigger paragraphs)
 		ncd[k] - normalisation constant for vector of paragraph k
 		function returns file names of the top k matching documents
@@ -66,6 +67,7 @@ class Indexer:
 		score = {}
 		docScore = {}
 		finalScore = {}
+		unique = {}
 		# weight = {}
 		# Normalization constants for input paragraph vectors
 		ncd = {}
@@ -92,15 +94,25 @@ class Indexer:
 		for i, j, k in score:
 			score[(i, j, k)] /= self.nc[(i, j)] * math.sqrt(ncd[k])
 			if docScore.get((i, k)):
-				docScore[(i, k)] = max([docScore[(i, k)], score[(i, j, k)]])
+				docScore[(i, k)] = max(docScore[(i, k)], score[(i, j, k)])
 			else:
 				docScore[(i, k)] = score[(i, j, k)]
+			if unique.get(k):
+				unique[k] = min(unique[k], 1 - docScore[(i, k)])
+			else:
+				unique[k] = 1 - docScore[(i, k)]
 		
 		for i, k in docScore:
 			if finalScore.get(i):
 				finalScore[i] += docScore[(i, k)] * input_doc.paras[k].size / input_doc.size
 			else:
 				finalScore[i] = docScore[(i, k)] * input_doc.paras[k].size / input_doc.size
+
+		uniqueness = 0
+		for k in unique:
+			uniqueness += unique[k] * input_doc.paras[k].size
+		uniqueness /= input_doc.size
+		uniqueness *= 100
 		ranks = []
 		for i in finalScore:
 			p = (finalScore[i], files[i])
@@ -108,5 +120,5 @@ class Indexer:
 		ranks.sort(reverse=True)
 		l = min(len(ranks), K)
 		ranks = ranks[:l]
-		return ranks
+		return ranks, uniqueness
 		

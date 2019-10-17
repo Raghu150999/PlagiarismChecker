@@ -76,14 +76,14 @@ if __name__ == '__main__':
 
 	# Length of vocabulary
 	vocabularyLength = len(vocabulary)
-	print(vocabularyLength)
+	# print(vocabularyLength)
 	
 	# Creating the inverted index
 	indexer = Indexer(documents)
 
 	# Take filename as input for processing
-	# inputDocument = str(sys.argv[1])
-	inputDocument = 'test.txt'
+	inputDocument = str(sys.argv[1])
+	# inputDocument = 'test.txt'
 	raw = None
 	with open(inputDocument, encoding="utf8", errors="ignore") as input_file:
 		raw = input_file.read()
@@ -95,7 +95,8 @@ if __name__ == '__main__':
 		paragraph = Paragraph(_id, tokens)
 		paragraphs.append(paragraph)
 	input_doc = Document(-1, paragraphs)
-	top_k = indexer.get_top_k(input_doc, files, 10)
+	top_k, uniqueness = indexer.evaluate_input(input_doc, files, 10)
 	for i in range(len(top_k)):
 		score, filename = top_k[i]
 		print('Document: ' + str(filename), 'Score: ' + str(score))
+	print('Uniqueness: ' + str(uniqueness) + ' %')
