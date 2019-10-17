@@ -6,3 +6,4 @@ class Paragraph:
 		self._id = _id
 		# Creating frequency distribution as a dictionary
 		self.freq_dist = dict(nltk.FreqDist(tokens))
+		self.size = len(tokens)

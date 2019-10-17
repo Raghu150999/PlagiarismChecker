@@ -11,3 +11,7 @@ class Document:
 		"""
 		self._id = _id
 		self.paras = paras
+		size = 0
+		for para in paras:
+			size += para.size
+		self.size = size

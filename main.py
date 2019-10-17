@@ -18,14 +18,14 @@ def paragraph_tokenizer(text):
 	string = ""
 	i = 0
 	while i < len(text):
-		if i < len(text)-1 and text[i] == '\n' and text[i+1] == '\n':
-			if string != "\n":
+		if i < len(text) and text[i] == '\n':
+			if string != "\n" and string != "":
 				output.append(string)
 			string = ""
 		else:
 			string += text[i]
 		i += 1
-	if string != "\n":
+	if string != "\n" and string != "":
 		output.append(string)
 	return output
 
@@ -82,8 +82,8 @@ if __name__ == '__main__':
 	indexer = Indexer(documents)
 
 	# Take filename as input for processing
-	inputDocument = str(sys.argv[1])
-	# inputDocument = 'test.txt'
+	# inputDocument = str(sys.argv[1])
+	inputDocument = 'test.txt'
 	raw = None
 	with open(inputDocument, encoding="utf8", errors="ignore") as input_file:
 		raw = input_file.read()

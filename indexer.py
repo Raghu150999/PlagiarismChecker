@@ -57,7 +57,7 @@ class Indexer:
 	def get_top_k(self, input_doc, files, K):
 		'''
 		score[(i, j, k)] - denotes cosine score between paragraph (i, j) in corpus and paragraph k from input document
-		docScore[(i, k)] - dentoes cosine score between document i and paragraph k
+		docScore[(i, k)] - dentoes cosine score between document i and paragraph k in input document
 		final[i] - denotes score/similarity of document i with input document
 		weight[k] - # of terms in paragraph k (or any other measure to more weightage to matching of bigger paragraphs)
 		ncd[k] - normalisation constant for vector of paragraph k
@@ -90,15 +90,17 @@ class Indexer:
 						score[(i, j, k)] = wt * tf_idf
 		
 		for i, j, k in score:
-			score[(i, j, k)] /= self.nc[(i, j)] * ncd[k]
+			score[(i, j, k)] /= self.nc[(i, j)] * math.sqrt(ncd[k])
 			if docScore.get((i, k)):
 				docScore[(i, k)] = max([docScore[(i, k)], score[(i, j, k)]])
 			else:
 				docScore[(i, k)] = score[(i, j, k)]
+		
+		for i, k in docScore:
 			if finalScore.get(i):
-				finalScore[i] += docScore[(i, k)]
+				finalScore[i] += docScore[(i, k)] * input_doc.paras[k].size / input_doc.size
 			else:
-				finalScore[i] = docScore[(i, k)]
+				finalScore[i] = docScore[(i, k)] * input_doc.paras[k].size / input_doc.size
 		ranks = []
 		for i in finalScore:
 			p = (finalScore[i], files[i])
