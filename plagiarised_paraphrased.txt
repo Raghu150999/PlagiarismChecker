@@ -1,0 +1,1 @@
+The vector space model often called term vector model. It is an algebraic model and is used to represent text-based documents. It can also be used to represent any objects in general. It represents them in form of vectors of identifiers. SMART Information Retrieval System were the first to use it in there system.

@@ -57,10 +57,9 @@ class Indexer:
 	def evaluate_input(self, input_doc, files, K):
 		'''
 		score[(i, j, k)] - denotes cosine score between paragraph (i, j) in corpus and paragraph k from input document
-		docScore[(i, k)] - dentoes cosine score between document i and paragraph k in input document
+		docScore[(i, k)] - denotes cosine score between document i and paragraph k in input document
 		unique[k] - denotes how unique paragraph k of the input document is
 		finalScore[i] - denotes score/similarity of document i with input document
-		weight[k] - # of terms in paragraph k (or any other measure to more weightage to matching of bigger paragraphs)
 		ncd[k] - normalisation constant for vector of paragraph k
 		function returns file names of the top k matching documents
 		'''
@@ -68,7 +67,6 @@ class Indexer:
 		docScore = {}
 		finalScore = {}
 		unique = {}
-		# weight = {}
 		# Normalization constants for input paragraph vectors
 		ncd = {}
 		# Repeated traversal of inverted index can be optimized?
