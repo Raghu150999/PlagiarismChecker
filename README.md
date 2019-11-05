@@ -12,4 +12,4 @@ Ensure that the input document (document to check for plagiarism) is in the root
 <pre><code>python3 main.py [filename]</code></pre>
 
 # Example
-<pre><code>python3 main.py test.txt</code></pre>
+<pre><code>python3 main.py test_files/plagiarised_paraphrased.txt</code></pre>
